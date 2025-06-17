@@ -48,6 +48,12 @@ TYPED_TEST(RingBufferTest, RingBufferIsFull) {
   EXPECT_TRUE(ringBuffer.IsFull());
 }
 
+TYPED_TEST(RingBufferTest, CheckCapacity) {
+  constexpr size_t capacity = 0x1337;
+  RingBuffer<TypeParam, capacity> ringBuffer;
+  EXPECT_EQ(capacity, ringBuffer.Capacity());
+}
+
 TYPED_TEST(RingBufferTest, ExtractMultiplePushedElements) {
   RingBuffer<TypeParam, 5> ringBuffer;
   std::vector<TypeParam> values {static_cast<TypeParam>(1.73),
@@ -68,6 +74,32 @@ TYPED_TEST(RingBufferTest, ExtractMultiplePushedElements) {
   }
 
   EXPECT_EQ(values, bufferValues);
+  EXPECT_TRUE(ringBuffer.IsEmpty());
+}
+
+TYPED_TEST(RingBufferTest, BufferLoopover) {
+  RingBuffer<TypeParam, 3> ringBuffer;
+  std::vector<TypeParam> values{ static_cast<TypeParam>(1.73),
+                                 static_cast<TypeParam>(123819.32312),
+                                 static_cast<TypeParam>(0xFABABAB),
+                                 static_cast<TypeParam>(87u),
+                                 static_cast<TypeParam>(-77777.9999) };
+
+  for (size_t i = 0u; i < ringBuffer.Capacity(); i++) {
+    ringBuffer.Push(TypeParam(values[i]));
+  }
+
+  EXPECT_TRUE(ringBuffer.IsFull());
+  EXPECT_EQ(values[0], ringBuffer.Pop());
+  EXPECT_EQ(values[1], ringBuffer.Pop());
+
+  for (size_t i = ringBuffer.Capacity(); i < values.size(); i++) {
+    ringBuffer.Push(TypeParam(values[i]));
+  }
+
+  EXPECT_EQ(values[2], ringBuffer.Pop());
+  EXPECT_EQ(values[3], ringBuffer.Pop());
+  EXPECT_EQ(values[4], ringBuffer.Pop());
   EXPECT_TRUE(ringBuffer.IsEmpty());
 }
 

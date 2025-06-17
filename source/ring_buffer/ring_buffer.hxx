@@ -24,17 +24,21 @@ class RingBuffer {
 public:
 template<class PushedElement>
 void Push(PushedElement&& e) {
-  buffer[tail++] = std::forward<PushedElement>(e);
+  buffer[tail] = std::forward<PushedElement>(e);
+  tail = (tail + 1) % buffer.max_size();
 }
 Element Pop() {
-  return buffer[head++];
+  Element popped = buffer[head];
+  head = (head + 1) % buffer.max_size();
+  return popped;
 }
-size_t Size() const { return tail - head; }
+size_t Size() const { return (tail + buffer.max_size() - head) % buffer.max_size(); }
 bool IsEmpty() const { return Size() == static_cast<size_t>(0); }
 bool IsFull() const { return Size() == capacity; }
+constexpr size_t Capacity() { return capacity; }
 
 private:
-  std::array<Element, capacity> buffer {};
+  std::array<Element, capacity + 1> buffer {};
   size_t head = 0u;
   size_t tail = 0u;
 };
