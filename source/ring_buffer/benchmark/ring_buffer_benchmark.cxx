@@ -14,33 +14,26 @@
 * limitations under the License.
 *************************************************************************/
 
+#include "ring_buffer.hxx"
+#include <benchmark/benchmark.h>
 #include <utility>
-#include <vector>
-#include <type_traits>
 
 template<class Element>
-class RingBuffer {
-public:
-RingBuffer(size_t capacity) 
-  : buffer(capacity + 1)
-{}
-template<class PushedElement>
-void Push(PushedElement&& e) {
-  buffer[tail] = std::forward<PushedElement>(e);
-  tail = (tail + 1) % buffer.size();
-}
-Element Pop() {
-  Element popped = buffer[head];
-  head = (head + 1) % buffer.size();
-  return popped;
-}
-size_t Size() const { return (tail + buffer.size() - head) % buffer.size(); }
-bool IsEmpty() const { return Size() == static_cast<size_t>(0); }
-bool IsFull() const { return Size() == buffer.size() - 1; }
-constexpr size_t Capacity() { return buffer.size() - 1; }
+void BM_LoadRingBuffer(benchmark::State& state) {
+  int buffer_size = state.range(0);
+  int load_count = state.range(1);
 
-private:
-  std::vector<Element> buffer;
-  size_t head = 0u;
-  size_t tail = 0u;
-};
+
+  for (auto _ : state) {
+    state.PauseTiming();
+    RingBuffer<Element> ringBuffer(buffer_size);
+    state.ResumeTiming();
+
+    for (int i = 0; i < load_count; ++i) {
+      benchmark::DoNotOptimize(i);
+      ringBuffer.Push(i);
+    }
+  }
+}
+
+BENCHMARK_TEMPLATE(BM_LoadRingBuffer, int64_t)->Ranges({ {1 << 10, 1 << 16}, {100, 1000} });

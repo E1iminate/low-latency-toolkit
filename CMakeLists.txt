@@ -21,4 +21,10 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/googletest)
+
+set(BENCHMARK_ENABLE_TESTING OFF)
+set(BENCHMARK_ENABLE_INSTALL OFF)
+set(BENCHMARK_BUILD_32BIT OFF)
+add_subdirectory(${PROJECT_SOURCE_DIR}/3rdparty/googlebenchmark)
+
 add_subdirectory(${PROJECT_SOURCE_DIR}/source/ring_buffer)

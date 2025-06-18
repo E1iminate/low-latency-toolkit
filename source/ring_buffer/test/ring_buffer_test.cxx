@@ -32,14 +32,14 @@ using RingBufferDataTypes = ::testing::Types<int64_t, uint64_t, float, double>;
 TYPED_TEST_SUITE(RingBufferTest, RingBufferDataTypes);
 
 TYPED_TEST(RingBufferTest, RingBufferIsEmptyInitially) {
-  RingBuffer<TypeParam, 1> ringBuffer;
+  RingBuffer<TypeParam> ringBuffer(1);
   EXPECT_EQ(ringBuffer.Size(), static_cast<size_t>(0));
   EXPECT_TRUE(ringBuffer.IsEmpty());
   EXPECT_FALSE(ringBuffer.IsFull());
 }
 
 TYPED_TEST(RingBufferTest, RingBufferIsFull) {
-  RingBuffer<TypeParam, 1> ringBuffer;
+  RingBuffer<TypeParam> ringBuffer(1);
 
   ringBuffer.Push(TypeParam(0x1337));
 
@@ -50,12 +50,12 @@ TYPED_TEST(RingBufferTest, RingBufferIsFull) {
 
 TYPED_TEST(RingBufferTest, CheckCapacity) {
   constexpr size_t capacity = 0x1337;
-  RingBuffer<TypeParam, capacity> ringBuffer;
+  RingBuffer<TypeParam> ringBuffer(capacity);
   EXPECT_EQ(capacity, ringBuffer.Capacity());
 }
 
 TYPED_TEST(RingBufferTest, ExtractMultiplePushedElements) {
-  RingBuffer<TypeParam, 5> ringBuffer;
+  RingBuffer<TypeParam> ringBuffer(5);
   std::vector<TypeParam> values {static_cast<TypeParam>(1.73),
                                  static_cast<TypeParam>(123819.32312),
                                  static_cast<TypeParam>(0xFABABAB),
@@ -78,7 +78,7 @@ TYPED_TEST(RingBufferTest, ExtractMultiplePushedElements) {
 }
 
 TYPED_TEST(RingBufferTest, BufferLoopover) {
-  RingBuffer<TypeParam, 3> ringBuffer;
+  RingBuffer<TypeParam> ringBuffer(3);
   std::vector<TypeParam> values{ static_cast<TypeParam>(1.73),
                                  static_cast<TypeParam>(123819.32312),
                                  static_cast<TypeParam>(0xFABABAB),

@@ -36,3 +36,17 @@ target_include_directories(ring_buffer_test
         ${CMAKE_CURRENT_LIST_DIR}
 )
 
+add_executable(ring_buffer_benchmark
+    benchmark/ring_buffer_benchmark.cxx
+)
+
+target_link_libraries(ring_buffer_benchmark
+    PRIVATE
+        ring_buffer
+        benchmark::benchmark_main
+)
+
+target_include_directories(ring_buffer_benchmark
+    PRIVATE
+        ${CMAKE_CURRENT_LIST_DIR}
+)
