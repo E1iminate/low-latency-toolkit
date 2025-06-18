@@ -18,22 +18,41 @@
 #include <benchmark/benchmark.h>
 #include <utility>
 
-template<class Element>
+template<class RingBufferType>
 void BM_LoadRingBuffer(benchmark::State& state) {
   int buffer_size = state.range(0);
-  int load_count = state.range(1);
-
 
   for (auto _ : state) {
     state.PauseTiming();
-    RingBuffer<Element> ringBuffer(buffer_size);
+    RingBufferType ringBuffer(buffer_size);
     state.ResumeTiming();
 
-    for (int i = 0; i < load_count; ++i) {
-      benchmark::DoNotOptimize(i);
-      ringBuffer.Push(i);
+    for (int i = 0; i < buffer_size; ++i) {
+      benchmark::DoNotOptimize(ringBuffer.Push(i));
     }
   }
 }
 
-BENCHMARK_TEMPLATE(BM_LoadRingBuffer, int64_t)->Ranges({ {1 << 10, 1 << 16}, {100, 1000} });
+template<class RingBufferType>
+void BM_EmptyRingBuffer(benchmark::State& state) {
+  int buffer_size = state.range(0);
+
+  for (auto _ : state) {
+    state.PauseTiming();
+    RingBufferType ringBuffer(buffer_size);
+    for (int i = 0; i < buffer_size; ++i) {
+      benchmark::DoNotOptimize(ringBuffer.Push(i));
+    }
+    state.ResumeTiming();
+    int64_t value = 0;
+    for (int i = 0; i < buffer_size; ++i) {
+      benchmark::DoNotOptimize(ringBuffer.Pop(value));
+    }
+    benchmark::DoNotOptimize(value);
+  }
+}
+
+BENCHMARK_TEMPLATE(BM_LoadRingBuffer, RingBufferSPSCSimple<int64_t>)->Ranges({{1 << 10, 1 << 16}});
+BENCHMARK_TEMPLATE(BM_LoadRingBuffer, RingBufferSPSCOptimized<int64_t>)->Ranges({{1 << 10, 1 << 16}});
+BENCHMARK_TEMPLATE(BM_EmptyRingBuffer, RingBufferSPSCSimple<int64_t>)->Ranges({ {1 << 10, 1 << 16} });
+BENCHMARK_TEMPLATE(BM_EmptyRingBuffer, RingBufferSPSCOptimized<int64_t>)->Ranges({ {1 << 10, 1 << 16} });
